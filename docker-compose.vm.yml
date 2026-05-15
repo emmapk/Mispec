@@ -1,0 +1,26 @@
+version: '3.8'
+
+# This file should be copied to your VM to run ONLY the Celery Workers.
+# Ensure you have your external Postgres and Redis URLs in a .env file on the VM.
+
+services:
+  celery_worker:
+    image: us-central1-docker.pkg.dev/job-drone-api/cloud-run-source-deploy/mispec-web@sha256:60a358fb3602b0c630e02d3e9bb3d18145307a029661ce8ba285bede2ed72271
+    command: celery -A mispec worker --loglevel=info
+    restart: always
+    env_file: .env
+    network_mode: host
+
+  celery_beat:
+    image: us-central1-docker.pkg.dev/job-drone-api/cloud-run-source-deploy/mispec-web@sha256:60a358fb3602b0c630e02d3e9bb3d18145307a029661ce8ba285bede2ed72271
+    command: celery -A mispec beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    restart: always
+    env_file: .env
+    network_mode: host
+
+  geocoding_worker:
+    image: us-central1-docker.pkg.dev/job-drone-api/cloud-run-source-deploy/mispec-web@sha256:60a358fb3602b0c630e02d3e9bb3d18145307a029661ce8ba285bede2ed72271
+    command: celery -A mispec worker -Q geocoding_queue --loglevel=info
+    restart: always
+    env_file: .env
+    network_mode: host
